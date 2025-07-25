@@ -1,10 +1,10 @@
 class ApiError extends Error {
-  constructor(
+  constructor({
     statusCode,
     message,
     details = [],
     isOperational = true,
-  ) {
+  } = {}) { // Добавляем значение по умолчанию для всего объекта
     super(message);
     this.statusCode = statusCode;
     this.details = details;
@@ -12,28 +12,52 @@ class ApiError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 
-  static UnauthorizedError(message = 'Unauthorized') {
-    return new ApiError(401, message);
+  static UnauthorizedError(options) {
+    return new ApiError({
+      statusCode: 401,
+      message: options?.message || 'Unauthorized',
+      details: options?.details,
+    });
   }
 
-  static NotFoundError(message = 'Resource not found') {
-    return new ApiError(404, message);
+  static NotFoundError(options) {
+    return new ApiError({
+      statusCode: 404,
+      message: options?.message || 'Resource not found',
+      details: options?.details,
+    });
   }
 
-  static InternalServerError(message = 'Internal server error') {
-    return new ApiError(500, message);
+  static InternalServerError(options) {
+    return new ApiError({
+      statusCode: 500,
+      message: options?.message || 'Internal server error',
+      details: options?.details,
+    });
   }
 
-  static ConflictError(message = 'Resource already exists') {
-    return new ApiError(409, message);
+  static ConflictError(options) {
+    return new ApiError({
+      statusCode: 409,
+      message: options?.message || 'Resource already exists',
+      details: options?.details,
+    });
   }
 
-  static BadRequestError(message = 'Bad request', details = []) {
-    return new ApiError(400, message, details);
+  static BadRequestError(options) {
+    return new ApiError({
+      statusCode: 400,
+      message: options?.message || 'Bad request',
+      details: options?.details || [],
+    });
   }
 
-  static ValidationError(message = 'Validation error', details = []) {
-    return new ApiError(400, message, details);
+  static ValidationError(options) {
+    return new ApiError({
+      statusCode: 400,
+      message: options?.message || 'Validation error',
+      details: options?.details || [],
+    });
   }
 }
 

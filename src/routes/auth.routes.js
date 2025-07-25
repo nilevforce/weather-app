@@ -10,16 +10,14 @@ router.post(
   middlewares.validateRequest(schemas.signupSchema, 'body'),
   authController.signup,
 );
+
 router.post(
   '/signin',
   middlewares.validateRequest(schemas.signinSchema, 'body'),
   authController.signin,
 );
-router.post('/signout', authController.signout);
-// router.get('/activate/:link', authController.activate);
-router.get('/refresh', authController.refresh);
 
-// router.post('/oauth/:provider');
-// router.post('/oauth/:provider/callback');
+router.post('/signout', authController.signout);
+router.post('/refresh', authController.refresh);
 
 export default router;

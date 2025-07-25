@@ -23,7 +23,7 @@ const validateRequest = (schema, location = 'body') => (req, res, next) => {
       message: item.message,
     }));
 
-    throw new ApiError.ValidationError(details);
+    throw ApiError.ValidationError({ details });
   }
 
   req.validated = value;

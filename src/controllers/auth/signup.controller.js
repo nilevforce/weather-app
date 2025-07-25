@@ -1,23 +1,22 @@
 import authService from '../../services/auth/index.js';
 
+/**
+ * Handles user signup request.
+ *
+ * @param {import('express').Request} req - Express request object.
+ * @param {import('express').Response} res - Express response object.
+ * @returns {Promise<void>}
+ */
 const signup = async (req, res) => {
-  const userData = await authService.signup({
+  await authService.signupByEmail({
     email: req.body.email,
     password: req.body.password,
     userAgent: req.headers['user-agent'],
-    fingerprint: req.body.fingerprint,
-    ip: req.ip,
+    ipAddress: req.ip,
+    origin: req.headers.origin || req.headers.referer,
   });
 
-  res.cookie(
-    'refreshToken',
-    userData.refreshToken,
-    {
-      maxAge: userData.refreshTokenExpiresAt,
-      httpOnly: true,
-    },
-  );
-  res.status(200).json({ ok: true, data: userData });
+  res.status(201).json();
 };
 
 export default signup;

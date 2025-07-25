@@ -1,7 +1,11 @@
-import generateTokens from './generate.service.js';
-import saveToken from './save.service.js';
+import generateAccessToken from './generate-access-token.service.js';
+import generateRefreshToken from './generate-refresh-token.service.js';
+import validateAccessToken from './validate-access-token.service.js';
+import validateRefreshToken from './validate-refresh-token.service.js';
 
 export default {
-  generateTokens,
-  saveToken,
+  generateAccessToken,
+  generateRefreshToken,
+  validateAccessToken,
+  validateRefreshToken,
 };

@@ -1,5 +1,6 @@
 import logger from '../lib/logger.js';
 import ApiError from '../errors/ApiError.js';
+import { getErrorMessage } from '../utils/index.js';
 
 /* eslint-disable-next-line no-unused-vars */
 const errorHandler = (err, req, res, next) => {
@@ -18,7 +19,7 @@ const errorHandler = (err, req, res, next) => {
   const response = {
     ok: false,
     error: {
-      message: processedError.message,
+      message: getErrorMessage(processedError),
       ...(processedError.details.length > 0 && { details: processedError.details }),
     },
   };

@@ -12,7 +12,7 @@ app.use(cookieParser());
 app.use(middlewares.requestLogger);
 
 app.use('/api/auth', authRouter);
-app.use('/api/users', usersRouter);
+app.use('/api/users', middlewares.auth, usersRouter);
 
 app.get('/api/ping', async (req, res) => {
   res.status(200)

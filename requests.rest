@@ -1,0 +1,31 @@
+GET http://localhost:3000/api/ping HTTP/1.1
+
+###
+
+POST http://localhost:3000/api/auth/signup HTTP/1.1
+content-type: application/json
+
+{
+    "email": "nilevforce@icloud.com",
+    "password": "epoKzDw3197!"
+}
+
+###
+
+POST http://localhost:3000/api/auth/signin HTTP/1.1
+content-type: application/json
+
+{
+    "email": "nilevforce@icloud.com",
+    "password": "epoKzDw3197!"
+}
+
+###
+
+POST http://localhost:3000/api/auth/signout HTTP/1.1
+content-type: application/json
+
+{
+    "email": "nilevforce@icloud.com",
+    "password": "epoKzDw3197!"
+}

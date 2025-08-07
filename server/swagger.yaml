@@ -1,0 +1,384 @@
+openapi: 3.0.0
+
+info:
+  title: Weather API
+  version: 1.0.0
+  description: API service for retrieving weather data and user management
+
+servers:
+  - url: /api
+    description: Default API path
+
+paths:
+  /ping:
+    get:
+      tags:
+        - Health
+      summary: API health check
+      description: Endpoint to check if the API is running
+      responses:
+        "200":
+          description: API is running
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "PONG"
+
+  /auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Create a new user account with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        "201":
+          description: User successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/signin:
+    post:
+      tags:
+        - Authentication
+      summary: Log in to user account
+      description: Sign in with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SigninRequest"
+      responses:
+        "200":
+          description: User successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/signout:
+    post:
+      tags:
+        - Authentication
+      summary: Log out from user account
+      description: Sign out and invalidate current session
+      responses:
+        "204":
+          description: Successfully logged out
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Get a new access token using refresh token
+      responses:
+        "200":
+          description: New tokens successfully generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    get:
+      tags:
+        - Users
+      summary: Get all users
+      description: List all registered users (admin only)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /weather:
+    get:
+      tags:
+        - Weather
+      summary: Get current weather
+      description: Retrieve current weather for specified location
+      parameters:
+        - in: query
+          name: city
+          required: true
+          schema:
+            type: string
+          description: Name of the city or location
+          example: London
+        - in: query
+          name: lang
+          schema:
+            type: string
+            enum: [en, ru]
+            default: en
+          description: Language for weather description
+      responses:
+        "200":
+          description: Weather data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentWeatherDto"
+        "400":
+          description: Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Location not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+tags:
+  - name: Health
+    description: API health checking endpoints
+  - name: Authentication
+    description: Authentication and user session management
+  - name: Users
+    description: User management operations
+  - name: Weather
+    description: Weather data retrieval endpoints
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    SignupRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          description: User's password (minimum 6 characters)
+          example: password123
+
+    SigninRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: user@example.com
+        password:
+          type: string
+          format: password
+          description: User's password
+          example: password123
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken:
+          type: string
+          description: JWT refresh token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: cuid
+          description: User's unique identifier
+          example: cjld2cjxh0000qzrmn831i7rn
+        email:
+          type: string
+          format: email
+          description: User's email address
+          example: user@example.com
+
+    CurrentWeatherDto:
+      type: object
+      properties:
+        location:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Name of the location
+              example: London
+            lat:
+              type: number
+              format: float
+              description: Latitude of the location
+              example: 51.5074
+            lon:
+              type: number
+              format: float
+              description: Longitude of the location
+              example: -0.1278
+            localtime:
+              type: string
+              format: date-time
+              description: Local time in ISO 8601 format
+              example: "2025-07-28T18:45:00+03:00"
+            timestamp:
+              type: integer
+              format: int64
+              description: Local time as Unix timestamp (seconds since epoch)
+              example: 1753701900
+        current:
+          type: object
+          properties:
+            temperature:
+              type: number
+              format: float
+              description: Current air temperature in degrees Celsius
+              example: 22.5
+            feelsLike:
+              type: number
+              format: float
+              description: Perceived temperature in degrees Celsius
+              example: 21.0
+            humidity:
+              type: number
+              format: float
+              description: Relative humidity as a percentage (0–100)
+              example: 60
+            pressure:
+              type: number
+              format: float
+              description: Atmospheric pressure in millibars (mb)
+              example: 1012
+            windSpeed:
+              type: number
+              format: float
+              description: Wind speed in meters per second (m/s)
+              example: 5.2
+            windGust:
+              type: number
+              format: float
+              description: Wind gust speed in meters per second (m/s)
+              example: 8.1
+            windDeg:
+              type: number
+              format: float
+              description: Wind direction in degrees (0–360)
+              example: 270
+            windDirection:
+              type: string
+              description: Compass direction of the wind
+              example: W
+            cloudCoverage:
+              type: number
+              format: float
+              description: Cloud cover as a percentage (0–100)
+              example: 75
+            precipitation:
+              type: number
+              format: float
+              description: Precipitation amount in millimeters (mm)
+              example: 0.5
+            uvIndex:
+              type: number
+              format: float
+              description: UV index (usually ranges from 0 to 11+)
+              example: 3
+            visibility:
+              type: number
+              format: float
+              description: Visibility in meters
+              example: 10000
+            conditionDescription:
+              type: string
+              description: Short description of current weather conditions
+              example: Partly cloudy
+            isDay:
+              type: boolean
+              description: Indicates whether it is currently daytime (true) or nighttime (false)
+              example: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            message:
+              type: string
+              description: Human-readable error message
+              example: Invalid input data
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                    description: Field that caused the error
+                    example: city
+                  message:
+                    type: string
+                    description: Error message for the field
+                    example: This field is required

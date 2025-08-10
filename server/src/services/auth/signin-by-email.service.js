@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
-import ApiError from '../../errors/ApiError.js';
-import UserDto from '../../dtos/users/User.dto.js';
+import { ApiError, UnauthorizedError } from '../../errors/api/index.js';
+import UserDto from '../../dtos/users/user.dto.js';
 import UserRepository from '../../repositories/user.repository.js';
 import SessionRepository from '../../repositories/session.repository.js';
 import tokensService from '../tokens/index.js';
@@ -29,7 +29,7 @@ const signinByEmail = async (
   const user = await UserRepository.findUserByEmail(email);
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
-    throw ApiError.UnauthorizedError({
+    throw new UnauthorizedError({
       message: 'Invalid email or password',
     });
   }

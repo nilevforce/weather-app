@@ -1,7 +1,7 @@
 /**
- * Base class for custom errors.
+ * Base class for application errors.
  */
-class BaseError extends Error {
+class AppError extends Error {
   /**
    * @param {Object} params - Error parameters
    * @param {string} params.message - Error message
@@ -22,4 +22,4 @@ class BaseError extends Error {
   }
 }
 
-export default BaseError;
+export default AppError;

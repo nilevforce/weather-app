@@ -1,4 +1,4 @@
-import ApiError from '../errors/ApiError.js';
+import { ValidationError } from '../errors/api/index.js';
 
 const validateRequest = (schema, location = 'body') => (req, res, next) => {
   if (!schema) return next();
@@ -23,7 +23,10 @@ const validateRequest = (schema, location = 'body') => (req, res, next) => {
       message: item.message,
     }));
 
-    throw ApiError.ValidationError({ details });
+    throw new ValidationError({
+      message: 'Invalid input params',
+      details,
+    });
   }
 
   req.validated = value;

@@ -1,8 +1,8 @@
-import UserDto from '../../dtos/users/User.dto.js';
+import UserDto from '../../dtos/users/user.dto.js';
 import UserRepository from '../../repositories/user.repository.js';
 import SessionRepository from '../../repositories/session.repository.js';
 import tokensService from '../tokens/index.js';
-import ApiError from '../../errors/ApiError.js';
+import { ApiError, UnauthorizedError } from '../../errors/api/index.js';
 
 /**
  * Refreshes user session by validating the refresh token, updating session, and issuing new tokens.
@@ -13,13 +13,13 @@ import ApiError from '../../errors/ApiError.js';
  * @throws {ApiError} If the refresh token is invalid or session/user not found.
  */
 const refreshSession = async (refreshToken) => {
-  if (!refreshToken) throw ApiError.UnauthorizedError();
+  if (!refreshToken) throw new UnauthorizedError();
 
   const userData = tokensService.validateRefreshToken(refreshToken);
-  if (!userData) throw ApiError.UnauthorizedError();
+  if (!userData) throw new UnauthorizedError();
 
   const sessionData = await SessionRepository.findSessionByRefreshToken(refreshToken);
-  if (!sessionData) throw ApiError.UnauthorizedError();
+  if (!sessionData) throw new UnauthorizedError();
 
   const user = await UserRepository.findUserById(userData.id);
   const userDto = new UserDto(user);

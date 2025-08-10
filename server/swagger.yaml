@@ -6,8 +6,10 @@ info:
   description: API service for retrieving weather data and user management
 
 servers:
-  - url: /api
+  - url: /api/v1
     description: Default API path
+  - url: /api/docs
+    description: Swagger UI documentation
 
 paths:
   /ping:
@@ -40,16 +42,8 @@ paths:
       responses:
         "201":
           description: User successfully created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthResponse"
         "400":
           description: Invalid request data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
   /auth/signin:
     post:
@@ -69,19 +63,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                $ref: "#/components/schemas/SigninResponse"
         "400":
           description: Invalid request data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
         "401":
           description: Invalid credentials
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
   /auth/signout:
     post:
@@ -105,20 +91,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AuthResponse"
+                $ref: "#/components/schemas/SigninResponse"
         "401":
           description: Invalid or expired refresh token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
 
   /users:
     get:
       tags:
         - Users
       summary: Get all users
-      description: List all registered users (admin only)
+      description: List all registered users (requires authentication)
       security:
         - bearerAuth: []
       responses:
@@ -132,23 +114,52 @@ paths:
                   $ref: "#/components/schemas/User"
         "401":
           description: Unauthorized
+
+  /users/{id}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      description: Retrieve a specific user by their ID (requires authentication)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: cuid
+          description: User's unique identifier
+          example: cjld2cjxh0000qzrmn831i7rn
+      responses:
+        "200":
+          description: User retrieved successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+        "404":
+          description: User not found
 
   /weather:
     get:
       tags:
         - Weather
       summary: Get current weather
-      description: Retrieve current weather for specified location
+      description: Retrieve current weather for specified location (requires authentication)
+      security:
+        - bearerAuth: []
       parameters:
         - in: query
           name: city
           required: true
           schema:
             type: string
+            minLength: 1
+            maxLength: 100
           description: Name of the city or location
           example: London
         - in: query
@@ -167,16 +178,49 @@ paths:
                 $ref: "#/components/schemas/CurrentWeatherDto"
         "400":
           description: Invalid parameters
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
         "404":
           description: Location not found
+
+  /weather/forecast:
+    get:
+      tags:
+        - Weather
+      summary: Get weather forecast
+      description: Retrieve weather forecast for specified location (requires authentication)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: city
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+          description: Name of the city or location
+          example: London
+        - in: query
+          name: lang
+          schema:
+            type: string
+            enum: [en, ru]
+            default: en
+          description: Language for weather description
+      responses:
+        "200":
+          description: Weather forecast data retrieved successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ErrorResponse"
+                $ref: "#/components/schemas/ForecastWeatherDto"
+        "400":
+          description: Invalid parameters
+        "401":
+          description: Unauthorized
+        "404":
+          description: Location not found
 
 tags:
   - name: Health
@@ -230,7 +274,7 @@ components:
           description: User's password
           example: password123
 
-    AuthResponse:
+    SigninResponse:
       type: object
       properties:
         accessToken:
@@ -257,37 +301,45 @@ components:
           format: email
           description: User's email address
           example: user@example.com
+        role:
+          type: string
+          format: email
+          description: User's role
+          example: USER
+
+    LocationWeatherDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the location
+          example: London
+        lat:
+          type: number
+          format: float
+          description: Latitude of the location
+          example: 51.5074
+        lon:
+          type: number
+          format: float
+          description: Longitude of the location
+          example: -0.1278
+        localtime:
+          type: string
+          format: date-time
+          description: Local time in ISO 8601 format
+          example: "2025-07-28T18:45:00+03:00"
+        timestamp:
+          type: integer
+          format: int64
+          description: Local time as Unix timestamp (seconds since epoch)
+          example: 1753701900
 
     CurrentWeatherDto:
       type: object
       properties:
         location:
-          type: object
-          properties:
-            name:
-              type: string
-              description: Name of the location
-              example: London
-            lat:
-              type: number
-              format: float
-              description: Latitude of the location
-              example: 51.5074
-            lon:
-              type: number
-              format: float
-              description: Longitude of the location
-              example: -0.1278
-            localtime:
-              type: string
-              format: date-time
-              description: Local time in ISO 8601 format
-              example: "2025-07-28T18:45:00+03:00"
-            timestamp:
-              type: integer
-              format: int64
-              description: Local time as Unix timestamp (seconds since epoch)
-              example: 1753701900
+          $ref: "#/components/schemas/LocationWeatherDto"
         current:
           type: object
           properties:
@@ -359,8 +411,119 @@ components:
               description: Indicates whether it is currently daytime (true) or nighttime (false)
               example: true
 
+    ForecastWeatherDto:
+      type: object
+      properties:
+        location:
+          $ref: "#/components/schemas/LocationWeatherDto"
+        forecast:
+          type: array
+          items:
+            $ref: "#/components/schemas/DailyForecastWeatherDto"
+
+    DailyForecastWeatherDto:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: Forecast date in ISO 8601 format
+          example: "2025-08-10"
+        maxTemp:
+          type: number
+          format: float
+          description: Maximum temperature in degrees Celsius
+          example: 25.5
+        minTemp:
+          type: number
+          format: float
+          description: Minimum temperature in degrees Celsius
+          example: 15.2
+        avgTemp:
+          type: number
+          format: float
+          description: Average temperature in degrees Celsius
+          example: 20.3
+        maxWindSpeed:
+          type: number
+          format: float
+          description: Maximum wind speed in meters per second (m/s)
+          example: 8.5
+        totalPrecipitation:
+          type: number
+          format: float
+          description: Total precipitation amount in millimeters (mm)
+          example: 2.5
+        avgHumidity:
+          type: number
+          format: float
+          description: Average humidity as a percentage (0–100)
+          example: 65
+        chanceOfRain:
+          type: number
+          format: float
+          description: Chance of rain as a percentage (0–100)
+          example: 30
+        conditionDescription:
+          type: string
+          description: Weather condition description
+          example: Partly cloudy
+        uvIndex:
+          type: number
+          format: float
+          description: UV index (usually ranges from 0 to 11+)
+          example: 4
+        hourly:
+          type: array
+          items:
+            $ref: "#/components/schemas/HourlyForecastWeatherDto"
+          description: Hourly forecast data (optional)
+
+    HourlyForecastWeatherDto:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+          description: Local time as Unix timestamp (seconds since epoch)
+          example: 1753701900
+        localtime:
+          type: string
+          format: date-time
+          description: Local time in ISO 8601 format
+          example: "2025-08-10T14:00:00+03:00"
+        temperature:
+          type: number
+          format: float
+          description: Temperature in degrees Celsius
+          example: 22.5
+        windSpeed:
+          type: number
+          format: float
+          description: Wind speed in meters per second (m/s)
+          example: 5.2
+        windDirection:
+          type: string
+          description: Compass direction of the wind
+          example: NW
+        precipitation:
+          type: number
+          format: float
+          description: Precipitation amount in millimeters (mm)
+          example: 0.1
+        chanceOfRain:
+          type: number
+          format: float
+          description: Chance of rain as a percentage (0–100)
+          example: 20
+        conditionDescription:
+          type: string
+          description: Weather condition description
+          example: Light clouds
+
     ErrorResponse:
       type: object
+      description: Standard error response format used across all error responses in the API
       properties:
         error:
           type: object
@@ -369,6 +532,10 @@ components:
               type: string
               description: Human-readable error message
               example: Invalid input data
+            code:
+              type: string
+              description: Error code
+              example: VALIDATION_ERROR
             details:
               type: array
               items:

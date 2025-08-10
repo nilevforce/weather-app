@@ -18,14 +18,16 @@ app.use(middlewares.requestLogger);
 
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.use('/api/auth', authRouter);
-app.use('/api/users', middlewares.auth, usersRouter);
-app.use('/api/weather', weatherRouter);
+app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/users', middlewares.auth, usersRouter);
+app.use('/api/v1/weather', middlewares.auth, weatherRouter);
+// app.use('/api/weather', weatherRouter);
 
 app.get('/api/ping', async (req, res) => {
   res.status(200).send('PONG');
 });
 
+app.use(middlewares.notFound);
 app.use(middlewares.errorHandler);
 
 export default app;

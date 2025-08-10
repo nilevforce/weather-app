@@ -2,8 +2,9 @@
 
 /**
  * @typedef {Object} UserDtoData
- * @property {string} id - Users ID.
- * @property {string} email - Users email.
+ * @property {string} id - User ID.
+ * @property {string} email - User email.
+ * @property {string} role - User role.
  */
 
 class UserDto {
@@ -13,6 +14,7 @@ class UserDto {
   constructor(user) {
     this.email = user.email;
     this.id = user.id;
+    this.role = user.role;
   }
 }
 

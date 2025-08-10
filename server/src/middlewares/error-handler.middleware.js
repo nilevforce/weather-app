@@ -1,29 +1,31 @@
 import logger from '../lib/logger.js';
-import ApiError from '../errors/ApiError.js';
+import { ApiError, InternalServerError } from '../errors/api/index.js';
 import { getErrorMessage } from '../utils/index.js';
 
 /* eslint-disable-next-line no-unused-vars */
 const errorHandler = (err, req, res, next) => {
-  logger.error({
-    message: err.message,
-    stack: err.stack,
-    details: err.details || {},
-    statusCode: err.statusCode,
-    errorCode: err.errorCode,
-  });
+  if (err instanceof ApiError) {
+    logger.error(err.message, err.toJSON());
+  } else {
+    logger.error(err.message, {
+      stack: err.stack,
+    });
+  }
 
   const processedError = err instanceof ApiError
     ? err
-    : ApiError.InternalServerError();
+    : new InternalServerError();
 
+  const { status, code, details } = processedError;
   const response = {
     error: {
       message: getErrorMessage(processedError),
-      ...(processedError.details.length > 0 && { details: processedError.details }),
+      ...(code ? { code } : {}),
+      ...(details?.length > 0 && { details }),
     },
   };
 
-  res.status(processedError.statusCode).json(response);
+  res.status(status).json(response);
 };
 
 export default errorHandler;

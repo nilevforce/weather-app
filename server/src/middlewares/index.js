@@ -6,6 +6,7 @@ import jsonMiddleware from './json.middleware.js';
 import authMiddleware from './auth.middleware.js';
 import notFoundMiddleware from './not-found.middleware.js';
 import checkRole from './roles.middleware.js';
+import { generalLimiter, authLimiter } from './rate-limiter.middleware.js';
 
 export default {
   cors: corsMiddleware,
@@ -16,4 +17,6 @@ export default {
   requestLogger,
   errorHandler,
   checkRole,
+  generalLimiter,
+  authLimiter,
 };

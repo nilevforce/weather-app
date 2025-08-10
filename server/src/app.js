@@ -11,6 +11,7 @@ const app = express();
 
 const swaggerDocument = YAML.load(`${process.cwd()}/swagger.yaml`);
 
+app.use(middlewares.generalLimiter);
 app.use(middlewares.json);
 app.use(middlewares.cors);
 app.use(cookieParser());
@@ -21,7 +22,6 @@ app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', middlewares.auth, usersRouter);
 app.use('/api/v1/weather', middlewares.auth, weatherRouter);
-// app.use('/api/weather', weatherRouter);
 
 app.get('/api/ping', async (req, res) => {
   res.status(200).send('PONG');

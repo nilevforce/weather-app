@@ -1,3 +1,5 @@
+import { TOO_MANY_REQUESTS } from 'http-status-codes';
+
 const ErrorCodes = {
   VALIDATION_ERROR: 'VALIDATION_ERROR',
   UNAUTHORIZED: 'UNAUTHORIZED',
@@ -8,6 +10,7 @@ const ErrorCodes = {
   BAD_REQUEST: 'BAD_REQUEST',
   SERVICE_UNAVAILABLE: 'SERVICE_UNAVAILABLE',
   BAD_GATEWAY: 'BAD_GATEWAY',
+  TOO_MANY_REQUESTS: 'TOO_MANY_REQUESTS',
 };
 
 export default ErrorCodes;

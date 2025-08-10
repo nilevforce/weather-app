@@ -3,6 +3,7 @@ import ForbiddenError from './ForbiddenError.js';
 import InternalServerError from './InternalServerError.js';
 import NotFoundError from './NotFoundError.js';
 import ServiceUnavailableError from './ServiceUnavailableError.js';
+import TooManyRequestsError from './TooManyRequestsError.js';
 import UnauthorizedError from './UnauthorizedError.js';
 import ValidationError from './ValidationError.js';
 
@@ -12,6 +13,7 @@ export {
   InternalServerError,
   NotFoundError,
   ServiceUnavailableError,
+  TooManyRequestsError,
   UnauthorizedError,
   ValidationError,
 };

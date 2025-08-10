@@ -30,6 +30,7 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
     "http-status-codes": "^2.3.0",
     "i": "^0.3.7",
     "joi": "^17.13.3",

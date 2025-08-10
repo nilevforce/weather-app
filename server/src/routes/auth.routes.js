@@ -7,12 +7,14 @@ const router = express.Router();
 
 router.post(
   '/signup',
+  middlewares.authLimiter,
   middlewares.validateRequest(schemas.signupSchema, 'body'),
   authController.signup,
 );
 
 router.post(
   '/signin',
+  middlewares.authLimiter,
   middlewares.validateRequest(schemas.signinSchema, 'body'),
   authController.signin,
 );
